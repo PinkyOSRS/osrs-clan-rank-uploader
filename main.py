@@ -43,15 +43,21 @@ def upload_clanrank():
             "branch": "main"
         }
 
+        # 🔍 Add logging
+        print(f"Uploading to: {url}")
+        print(f"Payload (truncated): {json.dumps(payload, indent=2)[:400]}")
         r = requests.put(url, headers=headers, json=payload)
+        print(f"GitHub status: {r.status_code}")
+        print(f"GitHub response: {r.text}")
 
         if r.status_code in [200, 201]:
             return jsonify({"status": "success", "filename": filename})
         else:
-            return jsonify({"error": f"GitHub API error", "details": r.text}), 500
+            return jsonify({"error": "GitHub API error", "details": r.text}), 500
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == "__main__":
