@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 # GitHub config
 GITHUB_TOKEN = os.environ.get("GITHUB_PAT")
-GITHUB_REPO = "PinkyOSRS/osrs-clan-rank-sync"
+GITHUB_REPO = "osrs-clan-rank-sync"
 GITHUB_OWNER = "PinkyOSRS"
 
 @app.route("/", methods=["GET"])
