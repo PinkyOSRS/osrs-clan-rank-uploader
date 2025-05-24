@@ -1,9 +1,14 @@
 import os
 import json
 import base64
+import logging
 from flask import Flask, request, jsonify
 import requests
 from datetime import datetime
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -15,7 +20,6 @@ GITHUB_OWNER = "PinkyOSRS"
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({"status": "ok", "message": "Uploader is running. Use POST /clanrank"})
-
 
 @app.route("/clanrank", methods=["POST"])
 def upload_clanrank():
@@ -43,12 +47,13 @@ def upload_clanrank():
             "branch": "main"
         }
 
-        # 🔍 Add logging
-        print(f"Uploading to: {url}", flush=True)
-        print(f"Payload (truncated): {json.dumps(payload, indent=2)[:400]}", flush=True)
-        r = requests.put(url, headers=headers, json=payload, flush=True)
-        print(f"GitHub status: {r.status_code}", flush=True)
-        print(f"GitHub response: {r.text}". flush=True)
+        # Log for debug
+        logger.info(f"Uploading to: {url}")
+        logger.info(f"Payload preview:\n{json.dumps(payload, indent=2)[:500]}")
+
+        r = requests.put(url, headers=headers, json=payload)
+        logger.info(f"GitHub response status: {r.status_code}")
+        logger.info(f"GitHub response body: {r.text}")
 
         if r.status_code in [200, 201]:
             return jsonify({"status": "success", "filename": filename})
@@ -56,10 +61,8 @@ def upload_clanrank():
             return jsonify({"error": "GitHub API error", "details": r.text}), 500
 
     except Exception as e:
+        logger.exception("An error occurred during upload")
         return jsonify({"error": str(e)}), 500
-
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
-
