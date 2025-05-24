@@ -44,11 +44,11 @@ def upload_clanrank():
         }
 
         # 🔍 Add logging
-        print(f"Uploading to: {url}")
-        print(f"Payload (truncated): {json.dumps(payload, indent=2)[:400]}")
-        r = requests.put(url, headers=headers, json=payload)
-        print(f"GitHub status: {r.status_code}")
-        print(f"GitHub response: {r.text}")
+        print(f"Uploading to: {url}", flush=True)
+        print(f"Payload (truncated): {json.dumps(payload, indent=2)[:400]}", flush=True)
+        r = requests.put(url, headers=headers, json=payload, flush=True)
+        print(f"GitHub status: {r.status_code}", flush=True)
+        print(f"GitHub response: {r.text}". flush=True)
 
         if r.status_code in [200, 201]:
             return jsonify({"status": "success", "filename": filename})
