@@ -17,6 +17,19 @@ GITHUB_TOKEN = os.environ.get("GITHUB_PAT")
 GITHUB_REPO = "osrs-clan-rank-sync"
 GITHUB_OWNER = "PinkyOSRS"
 
+def trigger_process_clan_ranks():
+    workflow_url = f"https://api.github.com/repos/{GITHUB_OWNER}/{GITHUB_REPO}/actions/workflows/process-clan-ranks.yml/dispatches"
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json"
+    }
+    payload = {
+        "ref": "main"
+    }
+
+    r = requests.post(workflow_url, headers=headers, json=payload)
+    logger.info(f"Triggered Process Clan Ranks: {r.status_code} {r.text}")
+
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({"status": "ok", "message": "Uploader is running. Use POST /clanrank"})
@@ -32,7 +45,6 @@ def upload_clanrank():
         filename = f"clanrank_{timestamp}.json"
         file_path = f"uploads/{filename}"
 
-        # Prepare upload to GitHub
         encoded_content = base64.b64encode(json.dumps(data, indent=4).encode("utf-8")).decode("utf-8")
         commit_message = f"Upload clanrank data {filename}"
 
@@ -47,15 +59,13 @@ def upload_clanrank():
             "branch": "main"
         }
 
-        # Log for debug
         logger.info(f"Uploading to: {url}")
-        logger.info(f"Payload preview:\n{json.dumps(payload, indent=2)[:500]}")
-
         r = requests.put(url, headers=headers, json=payload)
-        logger.info(f"GitHub response status: {r.status_code}")
-        logger.info(f"GitHub response body: {r.text}")
+        logger.info(f"GitHub response: {r.status_code} - {r.text}")
 
         if r.status_code in [200, 201]:
+            # ✅ Trigger the workflow after successful upload
+            trigger_process_clan_ranks()
             return jsonify({"status": "success", "filename": filename})
         else:
             return jsonify({"error": "GitHub API error", "details": r.text}), 500
